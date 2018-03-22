@@ -25,8 +25,6 @@ function getArtists(inner_pageNum) {
 
         var curArtistElement = $('#artist-item-template').clone();
 
-        console.log(curArtistElement)
-
         curArtistElement.find('.artist-name').text(currentArtist.name);
         curArtistElement.find('.artist-img-profile').attr('src', currentArtist.img_profile)
 
@@ -37,6 +35,6 @@ function getArtists(inner_pageNum) {
       }
     })
     .catch(function(error) {
-      console.log(error);
+      console.log(error.response);
     });
 }

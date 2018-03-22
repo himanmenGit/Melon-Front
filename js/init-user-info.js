@@ -16,26 +16,25 @@ function initUserInfo() {
 }
 
 function getUserInfo(token) {
-  console.log(token);
   axios({
     url: 'http://localhost:8000/api/members/info/',
     method: 'get',
     headers: {
-      Authorization: 'Token '.concat(token),
+      Authorization: 'token '.concat(token),
     }
   }).then(function(response) {
-    console.log(response.data)
-
-    var user = response.data.user
+    var user = response.data
     setUserInfo(user)
   }).catch(function(error) {
     console.log(error)
-    console.log(error.response.data)
   })
 }
 
 function setUserInfo(user) {
   $('h1#user-info').text(user.username.concat('(으)로 로그인 중입니다.'));
+  // $('img#user-profile').attr('src', user.img_profile_url);
+  // $('h3#user-name').text(user.last_name + user.first_name);
   $('h1#user-info').removeClass('none');
   $('form#input').addClass('none');
+  // $('#btn-facebook').addClass('none');
 }

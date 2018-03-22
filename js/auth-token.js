@@ -27,7 +27,6 @@ function getAuthToken(username, password) {
     setUserInfo(user)
 
   }).catch(function(error) {
-    console.log(error);
     console.log(error.response);
   });
 }

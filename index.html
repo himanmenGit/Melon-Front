@@ -9,36 +9,73 @@
 
   <link rel="stylesheet" href="css/base.css">
 </head>
-<!-- 1. AuthToken을 받아오는 JS함수 구현
- function getAuthToken (username, password) {}
- 주어진 매개변수 username과 password를 axios로 전달하고
- 돌아온 'token' 값을 console.log에 출력
-
- 2. form#login을 구현
- username, password를 받는 input2개와
- submit역활을 하는 button
- 해당 form에 'submit' 이 실행 되었을 때, form자체의 'submit'기능 대신
- jQuery를 사용해서 아래 getAuthToken() 함수를 호출
-
- 3. 위 링크를 참조해서 받아온 token값을 'token'쿠키 key에 7일후 만료되도록 저장 -->
 
 <body>
   <h1>Melon Front!</h1>
   <a href="artist-list.html">Artist List</a>
   <h1 id="user-info" class="none"></h1>
+  <img id="user-profile"></img>
+  <h3 id="user-name"></h3>
 
   <form id="input" action="/">
     <input type="text" id="username" name="username" value="" placeholder="username">
     <input type="password" id="password" name="password" value="" placeholder="password">
     <button type="submit">로그인</button>
   </form>
+
+  <button id="btn-facebook">페이스북 로그인</button>
+  <button id="btn-facebook-logout">페이스북 로그아웃</button>
+
   <script type="text/javascript" src="js/cookie.js"></script>
   <script type="text/javascript" src="js/axios.js"></script>
   <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+  <script type="text/javascript" src="js/fb.js"></script>
   <script type="text/javascript" src="js/auth-token.js"></script>
   <script type="text/javascript" src="js/init-user-info.js"></script>
   <script>
-    initUserInfo()
+    initUserInfo();
+
+    function facebookLogin() {
+      FB.getLoginStatus(function(response) {
+        var accessToken;
+        if (response.status != 'connected') {
+          FB.login(function(response) {
+            accessToken = response.authResponse.accessToken
+            getFacebookUser(accessToken)
+          });
+        } else {
+          accessToken = response.authResponse.accessToken
+          getFacebookUser(accessToken)
+        }
+      });
+    }
+
+    function getFacebookUser(access_token) {
+      axios({
+        url: 'http://localhost:8000/api/members/facebook-auth-token/',
+        method: 'post',
+        data: {
+          access_token: access_token,
+        }
+      }).then(function(response) {
+        console.log(response.data)
+        var token = response.data.token
+        var user = response.data.user
+        setCookie('token', token, 7);
+        setUserInfo(user)
+      }).catch(function(error) {
+        console.log(error.response);
+      });
+    }
+
+    $('#btn-facebook').click(function() {
+      facebookLogin();
+    })
+    $('#btn-facebook-logout').click(function() {
+      eraseCookie('token');
+      $('h1#user-info').addClass('none');
+      $('form#input').removeClass('none');
+    })
   </script>
 </body>
 

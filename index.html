@@ -1,12 +1,114 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Melon Front</title>
-</head>
-<body>
 
+  <link rel="stylesheet" href="css/base.css">
+</head>
+<!-- 1. AuthToken을 받아오는 JS함수 구현
+ function getAuthToken (username, password) {}
+ 주어진 매개변수 username과 password를 axios로 전달하고
+ 돌아온 'token' 값을 console.log에 출력
+
+ 2. form#login을 구현
+ username, password를 받는 input2개와
+ submit역활을 하는 button
+ 해당 form에 'submit' 이 실행 되었을 때, form자체의 'submit'기능 대신
+ jQuery를 사용해서 아래 getAuthToken() 함수를 호출
+
+ 3. 위 링크를 참조해서 받아온 token값을 'token'쿠키 key에 7일후 만료되도록 저장 -->
+
+<body>
+  <h1>Melon Front!</h1>
+  <a href="artist-list.html">Artist List</a>
+  <h1 id="user-info" class="none"></h1>
+
+  <form id="input" action="/">
+    <input type="text" id="username" name="username" value="" placeholder="username">
+    <input type="password" id="password" name="password" value="" placeholder="password">
+    <button type="submit">로그인</button>
+  </form>
+  <script type="text/javascript" src="js/cookie.js"></script>
+  <script type="text/javascript" src="js/axios.js"></script>
+  <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+  <script>
+    // -> function initUserInfo() {}
+    // 0. UserDetail과 /api/members/info/를 연결시키는 부분을 백엔드에 구현, Postman으로 테스트
+    // 1. 클라이언트에 'token'이라는 Cookie가 있는지 확인
+    // 2. 만약 있다면 해당 값을 가져온 후
+    // 3. getUserInfo()를 실행
+    //   -> UserDetail에 get요청, pk없음
+    //        URL: /api/members/info/
+    //     -> request.user를 기준으로 serialize한 User정보를 리턴
+    // 4. 유저정보를 가져온 후 getAuthToken의 .then()아래 유저정보 표시 로직을 실행
+
+    function initUserInfo() {
+      var token = getCookie('token')
+      if (token) {
+        getUserInfo(token)
+      }
+    }
+
+    function getUserInfo(token) {
+      console.log(token);
+      axios({
+        url: 'http://localhost:8000/api/members/info/',
+        method: 'get',
+        headers: {
+          Authorization: 'Token '.concat(token),
+        }
+      }).then(function(response) {
+        console.log(response.data)
+
+        var user = response.data.user
+        setUserInfo(user)
+      }).catch(function(error) {
+        console.log(error)
+        console.log(response.data)
+      })
+    }
+  </script>
+  <script>
+    function getAuthToken(username, password) {
+      axios({
+        url: 'http://localhost:8000/api/members/auth-token/',
+        method: 'post',
+        data: {
+          username: username,
+          password: password,
+        }
+      }).then(function(response) {
+        var token = response.data.token
+        setCookie('token', token, 7);
+
+        var user = response.data.user
+        setUserInfo(user)
+
+      }).catch(function(error) {
+        console.log(error);
+      });
+    }
+
+    $('#input').submit(function(event) {
+      var username = $('#username').val();
+      var password = $('#password').val();
+      getAuthToken(username, password);
+      $('#username').val('');
+      $('#password').val('');
+      event.preventDefault();
+    })
+
+    function setUserInfo(user) {
+      $('h1#user-info').text(user.username.concat('(으)로 로그인 중입니다.'));
+      $('h1#user-info').removeClass('none');
+      $('form#input').addClass('none');
+    }
+    initUserInfo()
+  </script>
 </body>
+
 </html>
